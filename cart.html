@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shopping bag | TheFortunateStore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<div class="wrap"><div class="sec-head" style="margin:28px 0 0"><h2 id="ph">Your Shopping Bag</h2><a class="link" href="shop.html">Continue shopping</a></div></div>
+<div class="wrap" id="main"></div>
+<div id="ftr"></div>
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="js/config.js"></script>
+<script src="js/products.js"></script>
+<script src="js/app.js"></script>
+<script>
+layout("cart");
+const demoMode = /X{4,}/.test(S.paystackKey);
+const orderLink = o => "https://wa.me/" + S.whatsapp + "?text=" + encodeURIComponent(orderText(o));
+
+function orderText(o) {
+  return `NEW ORDER ${o.ref}\n\n` +
+    o.items.map(i => `${i.qty} x ${i.name} (${i.color}, size ${i.size}) = ${money(i.price * i.qty)}`).join("\n") +
+    `\n\nSubtotal: ${money(o.subtotal)}\nDelivery: ${money(o.delivery)}\nTOTAL PAID: ${money(o.total)}\n\n` +
+    `DELIVER TO\n${o.customer.name}\nPhone: ${o.customer.phone}\nEmail: ${o.customer.email}\n` +
+    `${o.customer.address}${o.customer.landmark ? ", near " + o.customer.landmark : ""}\n${o.customer.city}, ${o.customer.state}` +
+    (o.customer.note ? `\nNote: ${o.customer.note}` : "") +
+    `\n\nPayment: ${o.demo ? "TEST MODE, no payment taken" : "Paystack ref " + o.ref}`;
+}
+
+function show() {
+  const { lines, subtotal, delivery, total } = cartLines();
+  const u = currentUser();
+  $("#ph").textContent = "Your Shopping Bag (" + cartCount() + ")";
+  if (!lines.length) {
+    $("#main").innerHTML = `<div class="empty"><h2>Your cart is empty</h2><p style="margin:10px auto 22px">Add something you like and it will show up here.</p><a class="btn" href="shop.html">Start shopping</a></div>`;
+    return;
+  }
+  const items = lines.map((l, i) => `
+    <div class="line">
+      ${art(l.p)}
+      <div><a href="product.html?id=${l.p.id}"><b>${esc(l.p.name)}</b></a>
+        <div class="muted" style="font-size:.9rem">${esc(l.color)}, size ${esc(l.size)}</div>
+        <button class="rm" data-rm="${i}">Remove</button></div>
+      <div style="text-align:right"><b>${money(l.p.price * l.qty)}</b>
+        <div class="qty" style="margin-top:8px"><button data-dec="${i}" aria-label="Fewer">−</button><span>${l.qty}</span><button data-inc="${i}" aria-label="More">+</button></div></div>
+    </div>`).join("");
+
+  const form = u ? `
+    <form id="pay" novalidate>
+      <h2>Delivery details</h2>
+      <p class="muted" style="margin-bottom:16px">Taken from your account. Change anything for this order.</p>
+      <div id="err" class="msg err" style="display:none"></div>
+      <div class="two">
+        <div class="field"><label for="name">Full name</label><input id="name" value="${esc(u.name)}" autocomplete="name"></div>
+        <div class="field"><label for="phone">Phone number</label><input id="phone" type="tel" value="${esc(u.phone)}" autocomplete="tel"></div>
+      </div>
+      <div class="field"><label for="address">Delivery address</label><input id="address" value="${esc(u.address)}" autocomplete="street-address"></div>
+      <div class="two">
+        <div class="field"><label for="city">City or town</label><input id="city" value="${esc(u.city)}"></div>
+        <div class="field"><label for="state">State</label><input id="state" value="${esc(u.state)}"></div>
+      </div>
+      <div class="field"><label for="landmark">Nearest landmark (optional)</label><input id="landmark" value="${esc(u.landmark || "")}"></div>
+      <div class="field"><label for="note">Note for us (optional)</label><textarea id="note" rows="2"></textarea></div>
+      <h2 style="margin-top:8px">Order Summary</h2>
+      <div class="sum"><span>Subtotal</span><span>${money(subtotal)}</span></div>
+      <div class="sum"><span>Delivery Fee</span><span>${delivery ? money(delivery) : "Free"}</span></div>
+      <div class="sum total"><span>Total</span><span>${money(total)}</span></div>
+      ${demoMode ? `<div class="msg ok" style="margin-top:14px">Test mode: add your Paystack key in js/config.js to take real payments. Right now no money is charged.</div>` : ""}
+      <button class="btn block" style="margin-top:14px" id="payBtn" type="submit">Pay ${money(total)}</button>
+    </form>` : `
+    <h2>Almost there</h2>
+    <p class="muted" style="margin-bottom:18px">Create an account or sign in so we know where to deliver. It takes a minute and your details are saved for next time.</p>
+    <div class="sum"><span>Subtotal</span><span>${money(subtotal)}</span></div>
+    <div class="sum"><span>Delivery</span><span>${delivery ? money(delivery) : "Free"}</span></div>
+    <div class="sum total"><span>Total</span><span>${money(total)}</span></div>
+    <a class="btn block" style="margin-top:16px" href="account.html?next=cart">Sign in or create account</a>`;
+
+  $("#main").innerHTML = `<div class="cart-grid"><div><div class="box">${items}</div><div class="secure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6z"/><path d="m9 12 2 2 4-4"/></svg><div><b>Secure checkout</b><br><span class="muted">Your payment is handled by Paystack.</span></div></div></div><div class="box">${form}</div></div>`;
+
+  $$("[data-rm]").forEach(b => b.onclick = () => { const c = getCart(); c.splice(+b.dataset.rm, 1); saveCart(c); show(); });
+  $$("[data-inc]").forEach(b => b.onclick = () => { const c = getCart(); c[+b.dataset.inc].qty = Math.min(10, c[+b.dataset.inc].qty + 1); saveCart(c); show(); });
+  $$("[data-dec]").forEach(b => b.onclick = () => { const c = getCart(); const i = +b.dataset.dec; c[i].qty > 1 ? c[i].qty-- : c.splice(i, 1); saveCart(c); show(); });
+  const f = $("#pay"); if (f) f.onsubmit = e => { e.preventDefault(); startPayment(); };
+}
+
+function fail(msg) { const e = $("#err"); e.textContent = msg; e.style.display = "block"; e.scrollIntoView({ behavior: "smooth", block: "center" }); }
+
+function startPayment() {
+  const v = id => $("#" + id).value.trim();
+  const customer = { name: v("name"), phone: v("phone"), email: currentUser().email, address: v("address"), city: v("city"), state: v("state"), landmark: v("landmark"), note: v("note") };
+  const missing = ["name", "phone", "address", "city", "state"].find(k => !customer[k]);
+  if (missing) return fail("Fill in your " + { name: "full name", phone: "phone number", address: "delivery address", city: "city or town", state: "state" }[missing] + " so we can deliver.");
+  if (!/^[0-9+\s-]{7,}$/.test(customer.phone)) return fail("Enter a phone number we can call, for example 0803 000 0000.");
+
+  const { lines, subtotal, delivery, total } = cartLines();
+  const make = ref => ({
+    ref, date: new Date().toISOString(), demo: demoMode, customer, subtotal, delivery, total,
+    items: lines.map(l => ({ id: l.p.id, name: l.p.name, color: l.color, size: l.size, qty: l.qty, price: l.p.price }))
+  });
+
+  if (demoMode) return finish(make("TEST-" + Date.now()));
+  if (typeof PaystackPop === "undefined") return fail("The payment window could not load. Check your internet connection and try again.");
+
+  const ref = "ORD-" + Date.now();
+  $("#payBtn").disabled = true;
+  PaystackPop.setup({
+    key: S.paystackKey, email: customer.email, amount: total * 100, currency: "NGN", ref,
+    metadata: { custom_fields: [{ display_name: "Customer", variable_name: "customer", value: customer.name }, { display_name: "Phone", variable_name: "phone", value: customer.phone }] },
+    callback: function (res) { finish(make(res.reference)); },
+    onClose: function () { const b = $("#payBtn"); if (b) b.disabled = false; }
+  }).openIframe();
+}
+
+async function finish(order) {
+  // 1. Save in the customer's order history
+  const orders = LS.get("orders", []); orders.unshift({ ...order, owner: order.customer.email }); LS.set("orders", orders);
+  // 2. Update saved address on their account
+  const u = currentUser(); Object.assign(u, { name: order.customer.name, phone: order.customer.phone, address: order.customer.address, city: order.customer.city, state: order.customer.state, landmark: order.customer.landmark }); saveUser(u);
+  // 3. Email the order to the owner
+  if (!/X{4,}/.test(S.formEndpoint)) {
+    try {
+      await fetch(S.formEndpoint, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ _subject: "New order " + order.ref + " from " + order.customer.name, email: order.customer.email, message: orderText(order) }) });
+    } catch (e) { /* the WhatsApp button below is the backup */ }
+  }
+  // 4. Clear cart and confirm
+  saveCart([]);
+  $("#main").innerHTML = `<div class="done">
+    <h1>Thank you, ${esc(order.customer.name.split(" ")[0])}. Your order is in.</h1>
+    <p>Order <b>${esc(order.ref)}</b> for <b>${money(order.total)}</b>. We will pack it and deliver it to ${esc(order.customer.address)}, ${esc(order.customer.city)}. We will call ${esc(order.customer.phone)} if we need anything.</p>
+    ${order.demo ? `<div class="msg ok" style="max-width:520px;margin:0 auto 20px">This was a test order. No payment was taken.</div>` : ""}
+    <a class="btn" href="${orderLink(order)}" target="_blank" rel="noopener">Send order details on WhatsApp</a>
+    <p class="muted" style="margin:14px auto 22px;font-size:.92rem">Tap the button to message us your order so we can confirm it faster.</p>
+    <a class="btn ghost" href="account.html">View my orders</a>
+  </div>`;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+show();
+</script>
+</body>
+</html>

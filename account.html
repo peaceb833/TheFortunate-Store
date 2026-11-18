@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My account | TheFortunateStore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+<div class="wrap" id="main"></div>
+<div id="ftr"></div>
+<script src="js/config.js"></script>
+<script src="js/products.js"></script>
+<script src="js/app.js"></script>
+<script>
+const qs = new URLSearchParams(location.search);
+const next = qs.get("next");
+const goNext = () => { location.href = next === "cart" ? "cart.html" : "account.html"; };
+const val = id => $("#" + id).value.trim();
+const showMsg = (id, m) => { const e = $("#" + id); e.textContent = m; e.style.display = "block"; };
+
+const addressFields = (u = {}) => `
+  <div class="field"><label for="address">Delivery address</label><input id="address" value="${esc(u.address || "")}" autocomplete="street-address"></div>
+  <div class="two">
+    <div class="field"><label for="city">City or town</label><input id="city" value="${esc(u.city || "")}"></div>
+    <div class="field"><label for="state">State</label><input id="state" value="${esc(u.state || "")}"></div>
+  </div>
+  <div class="field"><label for="landmark">Nearest landmark (optional)</label><input id="landmark" value="${esc(u.landmark || "")}"></div>`;
+const profileFields = (u = {}) => `
+  <div class="field"><label for="name">Full name</label><input id="name" value="${esc(u.name || "")}" autocomplete="name"></div>
+  <div class="field"><label for="phone">Phone number</label><input id="phone" type="tel" value="${esc(u.phone || "")}" autocomplete="tel"></div>`;
+
+function signedOut() {
+  $("#main").innerHTML = `<div class="signed">
+    <div class="box"><h2>Sign in</h2>
+      <div id="e1" class="msg err" style="display:none"></div>
+      <form id="login" novalidate>
+        <div class="field"><label for="le">Email</label><input id="le" type="email" autocomplete="email"></div>
+        <div class="field"><label for="lp">Password</label><input id="lp" type="password" autocomplete="current-password"></div>
+        <button class="btn dark block" type="submit">Sign in</button>
+      </form></div>
+    <div class="box"><h2>Create an account</h2>
+      <p class="muted" style="margin-bottom:16px">Save your delivery details once and check out faster every time.</p>
+      <div id="e2" class="msg err" style="display:none"></div>
+      <form id="signup" novalidate>
+        ${profileFields()}${addressFields()}
+        <div class="field"><label for="se">Email</label><input id="se" type="email" autocomplete="email"></div>
+        <div class="field"><label for="sp">Password (at least 6 characters)</label><input id="sp" type="password" autocomplete="new-password"></div>
+        <button class="btn block" type="submit">Create account</button>
+      </form></div></div>`;
+  $("#login").onsubmit = async e => {
+    e.preventDefault();
+    const email = val("le").toLowerCase(), u = users()[email];
+    if (!u || u.hash !== await sha(val("lp"))) return showMsg("e1", "That email and password don't match. Check both and try again, or create an account.");
+    LS.set("session", email); goNext();
+  };
+  $("#signup").onsubmit = async e => {
+    e.preventDefault();
+    const d = { name: val("name"), phone: val("phone"), state: val("state"), address: val("address"), city: val("city"), landmark: val("landmark"), email: val("se").toLowerCase() };
+    if (["name", "phone", "address", "city", "state"].some(k => !d[k])) return showMsg("e2", "Fill in all the delivery details so we know where to send your order.");
+    if (!/^\S+@\S+\.\S+$/.test(d.email)) return showMsg("e2", "Enter a valid email address, for example name@gmail.com.");
+    if (val("sp").length < 6) return showMsg("e2", "Choose a password with at least 6 characters.");
+    if (users()[d.email]) return showMsg("e2", "There is already an account with that email. Sign in on the left.");
+    d.hash = await sha(val("sp")); saveUser(d); LS.set("session", d.email); goNext();
+  };
+}
+
+const orderRow = (o, short) => {
+  const p = byId(o.items[0].id);
+  return `<div class="order">${p ? art(p) : ""}<div style="flex:1"><b>Order #${esc(o.ref)}</b> <span class="pill">Order received</span>
+    <div class="muted" style="font-size:.88rem">${new Date(o.date).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}${short ? "" : ", " + o.items.map(i => `${i.qty} x ${esc(i.name)}`).join(", ")}</div></div><b>${money(o.total)}</b></div>`;
+};
+
+function signedIn(u) {
+  const mine = LS.get("orders", []).filter(o => o.owner === u.email);
+  const spent = mine.reduce((n, o) => n + o.total, 0), saved = wishes().map(byId).filter(Boolean);
+  let tab = qs.get("tab") || "dash";
+  const TABS = [["dash", "Dashboard"], ["orders", "My Orders"], ["address", "My Addresses"], ["profile", "My Profile"], ["saved", "Saved Items"]];
+  const views = {
+    dash: () => `<div class="sec-head" style="margin:0"><div><h2>My Dashboard</h2><p class="muted">Track your orders and manage your account.</p></div><a class="btn" href="shop.html">Keep shopping</a></div>
+      <div class="stats"><div class="stat"><b>${mine.length}</b><span>Total orders</span></div><div class="stat"><b>${mine.reduce((n, o) => n + o.items.reduce((m, i) => m + i.qty, 0), 0)}</b><span>Items bought</span></div><div class="stat"><b>${saved.length}</b><span>Saved items</span></div><div class="stat"><b>${money(spent)}</b><span>Total spent</span></div></div>
+      <div class="sec-head"><h2 style="font-size:1.3rem">Recent Orders</h2></div>${mine.length ? mine.slice(0, 3).map(o => orderRow(o, true)).join("") : `<div class="empty"><p>No orders yet.</p><a class="btn" style="margin-top:14px" href="shop.html">Start shopping</a></div>`}`,
+    orders: () => `<h2 style="margin-bottom:16px">My Orders</h2>${mine.length ? mine.map(o => orderRow(o)).join("") : `<div class="empty"><p>No orders yet.</p><a class="btn" style="margin-top:14px" href="shop.html">Start shopping</a></div>`}`,
+    address: () => `<h2 style="margin-bottom:6px">My Addresses</h2><p class="muted" style="margin-bottom:18px">We deliver to this address. You can change it for any order at checkout.</p>
+      <div class="box" style="max-width:520px"><div id="m1" class="msg err" style="display:none"></div><div id="m2" class="msg ok" style="display:none">Address saved.</div>
+      <form id="fa" novalidate>${addressFields(u)}<button class="btn block" type="submit">Save address</button></form></div>`,
+    profile: () => `<h2 style="margin-bottom:18px">My Profile</h2>
+      <div class="box" style="max-width:520px"><div id="m1" class="msg err" style="display:none"></div><div id="m2" class="msg ok" style="display:none">Profile saved.</div>
+      <form id="fp" novalidate>${profileFields(u)}<div class="field"><label>Email</label><input value="${esc(u.email)}" disabled></div><button class="btn block" type="submit">Save profile</button></form></div>`,
+    saved: () => `<h2 style="margin-bottom:18px">Saved Items</h2>${saved.length ? `<div class="grid">${saved.map(tile).join("")}</div>` : `<div class="empty"><p>Tap the heart on any product to save it here.</p><a class="btn" style="margin-top:14px" href="shop.html">Browse products</a></div>`}`
+  };
+  const draw = () => {
+    $("#main").innerHTML = `<div class="dash"><aside>
+      <div class="who"><div class="avatar">${esc(u.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase())}</div><b>${esc(u.name)}</b><div class="muted" style="font-size:.85rem">${esc(u.email)}</div></div>
+      <nav class="dnav">${TABS.map(([k, l]) => `<button data-t="${k}" class="${tab === k ? "on" : ""}">${l}</button>`).join("")}<button id="out">Logout</button></nav></aside>
+      <main>${views[tab]()}</main></div>`;
+    $$(".dnav [data-t]").forEach(b => b.onclick = () => { tab = b.dataset.t; draw(); });
+    $("#out").onclick = () => { LS.set("session", null); location.href = "index.html"; };
+    const save = (id, keys) => { const f = $(id); if (!f) return; f.onsubmit = e => {
+      e.preventDefault(); const d = Object.fromEntries(keys.map(k => [k, val(k)]));
+      if (keys.filter(k => k !== "landmark").some(k => !d[k])) { $("#m2").style.display = "none"; return showMsg("m1", "Fill in all the required details."); }
+      $("#m1").style.display = "none"; Object.assign(u, d); saveUser(u); $("#m2").style.display = "block"; layout("account");
+    }; };
+    save("#fa", ["address", "city", "state", "landmark"]); save("#fp", ["name", "phone"]);
+  };
+  draw();
+}
+
+layout("account");
+const me = currentUser();
+me ? signedIn(me) : signedOut();
+</script>
+</body>
+</html>
