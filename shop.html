@@ -10,9 +10,17 @@
 </head>
 <body>
 <div id="hdr"></div>
-<section class="banner"><div class="wrap"><h1 id="title">Shop Our<br>Collections</h1><p>Style. Quality. Class.</p></div></section>
-<div class="wrap shop">
-  <aside class="side" aria-label="Categories"><h3>Categories</h3><div id="side"></div></aside>
+<section class="banner">
+  <img  class="bg" id="bnImg" alt="" onerror="bannerFallback(this)">
+  <div class="shade"></div>
+  <div class="wrap">
+    <small>TheFortunateStore</small>
+    <h1 id="title">Shop Our<br>Collections</h1>
+    <p id="bnSub">Style. Quality. Class.</p>
+  </div>
+</section>
+<div class="wrap shop top">
+  <nav aria-label="Categories"><div class="cattiles" id="side"></div></nav>
   <main>
     <div class="toolbar">
       <input id="q" type="search" placeholder="Search products" aria-label="Search products">
@@ -34,12 +42,39 @@ layout("shop");
 const params = new URLSearchParams(location.search);
 const st = { g: params.get("g") || "", c: params.get("c") || "", q: params.get("q") || "", sort: "" };
 const ACC = ["belts", "ties", "hats"];
-const SIDE = [["g", "men", "Men's Fashion"], ["g", "women", "Women's Fashion"], ["c", "clothing", "Clothing"], ["c", "shoes", "Shoes"], ["c", "bags", "Bags"], ["c", "belts", "Belts"], ["c", "ties", "Ties"], ["c", "hats", "Hats"]];
+const SIDE = [["g", "men", "Men's Fashion", "cat-men"], ["g", "women", "Women's Fashion", "cat-women"], ["c", "shoes", "Shoes", "cat-shoes"], ["c", "bags", "Office Bags", "cat-bags"], ["c", "accessories", "Belts & Ties", "cat-belts"], ["c", "hats", "Hats", "cat-hats"]];
 $("#q").value = st.q;
 
+/* Hero photo, headline and line for each category. Photos are the same ones your home page uses. */
+const HERO = {
+  "":          ["hero-shoes", "cat-shoes", "Shop Our<br>Collections", "Style. Quality. Class."],
+  men:         ["hero-shirts", "cat-men", "Men's<br>Fashion", "Shirts, suits, shoes and accessories for him."],
+  women:       ["hero-trouser", "cat-women", "Women's<br>Fashion", "Dresses, heels, bags and blazers for her."],
+  clothing:    ["hero-shirts", "cat-men", "Shirts That<br>Fit Right.", "Linen, cotton and print shirts, suits and skirts for every day."],
+  shoes:       ["hero-shoes", "cat-shoes", "Step Out<br>in Style.", "Leather oxfords, loafers, sneakers and heels for every occasion."],
+  bags:        ["hero-bags", "cat-bags", "Carry It<br>in Luxury.", "Totes, crossbody bags and briefcases in fine leather."],
+  accessories: ["hero-ties", "cat-belts", "Finish<br>the Look.", "Silk ties, bow ties, belts and hats that make an outfit complete."],
+  belts:       ["hero-ties", "cat-belts", "Finish<br>the Look.", "Belts that pull an outfit together."],
+  ties:        ["hero-ties", "cat-belts", "Finish<br>the Look.", "Silk ties and bow ties for every occasion."],
+  hats:        ["hero-ties", "cat-hats", "Top It<br>Off.", "Fedoras, sun hats and caps with real presence."]
+};
+function bannerFallback(img) {            // if the hero photo is missing, try the category photo, then give up
+  const alt = img.dataset.alt;
+  if (alt && !img.dataset.tried) { img.dataset.tried = 1; img.src = "images/" + alt + ".jpg"; } else img.style.display = "none";
+}
+let lastHero = null;
+function setBanner() {
+  const key = st.c || st.g || "";
+  if (key === lastHero) return; lastHero = key;
+  const [img, alt, title, sub] = HERO[key] || HERO[""];
+  const i = $("#bnImg"); i.style.display = ""; i.dataset.tried = ""; i.dataset.alt = alt; i.src = "images/" + img + ".jpg";
+  setBanner();
+  $$(".banner small,.banner h1,.banner p").forEach(e => { e.style.animation = "none"; e.offsetWidth; e.style.animation = ""; });
+}
+
 function render() {
-  $("#side").innerHTML = `<button class="cl ${!st.g && !st.c ? "on" : ""}" data-all>All products</button>` +
-    SIDE.map(([k, v, l]) => `<button class="cl ${st[k] === v ? "on" : ""}" data-k="${k}" data-v="${v}">${l}</button>`).join("");
+  $("#side").innerHTML = `<button class="ct-all ${!st.g && !st.c ? "on" : ""}" data-all>All products</button>` +
+    SIDE.map(([k, v, l, img]) => `<button class="ct ${st[k] === v ? "on" : ""}" data-k="${k}" data-v="${v}"><img src="images/${img}.jpg" alt="" loading="lazy" onerror="this.remove()"><span class="ct-l">${l}</span></button>`).join("");
   let list = PRODUCTS.filter(p =>
     (!st.g || p.gender === st.g || p.gender === "unisex") &&
     (!st.c || (st.c === "accessories" ? ACC.includes(p.cat) : p.cat === st.c)) &&
@@ -51,6 +86,7 @@ function render() {
   $("#count").textContent = list.length + (list.length === 1 ? " result" : " results");
   $("#grid").innerHTML = list.length ? list.map(tile).join("")
     : `<div class="empty" style="grid-column:1/-1"><h3>Nothing matches that search</h3><p style="margin:8px auto 18px">Try a different word, or clear the filters.</p><button class="btn ghost" id="clear">Clear filters</button></div>`;
+  const on = $("#side .ct.on"); if (on) $("#side").scrollTo({ left: on.offsetLeft - ($("#side").clientWidth - on.offsetWidth) / 2, behavior: "smooth" });
   const clr = $("#clear"); if (clr) clr.onclick = () => { st.g = st.c = st.q = ""; $("#q").value = ""; render(); };
 }
 $("#side").addEventListener("click", e => {

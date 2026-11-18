@@ -78,7 +78,7 @@ function show() {
     <div class="sum"><span>Subtotal</span><span>${money(subtotal)}</span></div>
     <div class="sum"><span>Delivery</span><span>${delivery ? money(delivery) : "Free"}</span></div>
     <div class="sum total"><span>Total</span><span>${money(total)}</span></div>
-    <a class="btn block" style="margin-top:16px" href="account.html?next=cart">Sign in or create account</a>`;
+    <a class="btn block" style="margin-top:16px" href="sign-in.html?next=cart.html">Sign in or create account</a>`;
 
   $("#main").innerHTML = `<div class="cart-grid"><div><div class="box">${items}</div><div class="secure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6z"/><path d="m9 12 2 2 4-4"/></svg><div><b>Secure checkout</b><br><span class="muted">Your payment is handled by Paystack.</span></div></div></div><div class="box">${form}</div></div>`;
 

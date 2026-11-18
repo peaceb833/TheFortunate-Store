@@ -13,73 +13,61 @@
 
 <section class="hero-car" aria-roledescription="carousel" aria-label="Featured collections">
 
-  <!-- Background video: save your clip as videos/fashion.mp4 (MP4, under about 8 MB, 10 to 20 seconds).
-       Optional: save one frame of it as images/hero-poster.jpg, which shows while the video loads. -->
-  <video class="bg-video" autoplay muted loop playsinline preload="metadata" poster="images/hero-poster.jpg">
-    <source src="videos/fashion.mp3" type="video/mp4">
-  </video> 
-  <div class="video-shade"></div>
-
   <div class="slides" id="slides">
-    <!-- Each block below is one slide. The photo sits beside the writing. Change src="..." to your own photo file. -->
+    <!-- Each block below is one slide. The photo is the full slide background, and the writing is centered on top of it. Change src="..." on the <img class="bg"> line to your own photo file. -->
 
     <div class="slide on">
+      <img class="bg" src="images/hero-shoes.jpg" alt="Shoes" onerror="this.remove()">
+      <div class="shade"></div>
       <div class="wrap">
-        <div class="txt">
-          <small>TheFortunateStore</small>
-          <h1>Step Out<br>in Style.</h1>
-          <p>Leather oxfords, loafers, sneakers and heels for every occasion.</p>
-          <a class="btn" href="shop.html?c=shoes">Shop Shoes</a>
-        </div>
-        <div class="pic"><img src="images/hero-shoes.jpg" alt="Shoes" onerror="this.remove()"></div>
+        <small>TheFortunateStore</small>
+        <h1>Step Out<br>in Style.</h1>
+        <p>Leather oxfords, loafers, sneakers and heels for every occasion.</p>
+        <a class="btn" href="shop.html?c=shoes">Shop Shoes</a>
       </div>
     </div>
 
     <div class="slide">
+      <img class="bg" src="images/hero-ties.jpg" alt="Ties and accessories" onerror="this.remove()">
+      <div class="shade"></div>
       <div class="wrap">
-        <div class="txt">
-          <small>TheFortunateStore</small>
-          <h1>Finish<br>the Look.</h1>
-          <p>Silk ties, bow ties, belts and hats that make an outfit complete.</p>
-          <a class="btn" href="shop.html?c=accessories">Shop Accessories</a>
-        </div>
-        <div class="pic"><img src="images/hero-ties.jpg" alt="Ties and accessories" onerror="this.remove()"></div>
+        <small>TheFortunateStore</small>
+        <h1>Finish<br>the Look.</h1>
+        <p>Silk ties, bow ties, belts and hats that make an outfit complete.</p>
+        <a class="btn" href="shop.html?c=accessories">Shop Accessories</a>
       </div>
     </div>
 
     <div class="slide">
+      <img class="bg" src="images/hero-shirts.jpg" alt="Shirts" onerror="this.remove()">
+      <div class="shade"></div>
       <div class="wrap">
-        <div class="txt">
-          <small>TheFortunateStore</small>
-          <h1>Shirts That<br>Fit Right.</h1>
-          <p>Linen, cotton and print shirts for work, weekends and weddings.</p>
-          <a class="btn" href="shop.html?c=clothing">Shop Shirts</a>
-        </div>
-        <div class="pic"><img src="images/hero-shirts.jpg" alt="Shirts" onerror="this.remove()"></div>
+        <small>TheFortunateStore</small>
+        <h1>Shirts That<br>Fit Right.</h1>
+        <p>Linen, cotton and print shirts for work, weekends and weddings.</p>
+        <a class="btn" href="shop.html?c=clothing">Shop Shirts</a>
       </div>
     </div>
 
     <div class="slide">
+      <img class="bg" src="images/trousers.jpg" alt="Trousers" onerror="this.remove()">
+      <div class="shade"></div>
       <div class="wrap">
-        <div class="txt">
-          <small>TheFortunateStore</small>
-          <h1>Trousers Cut<br>to Impress.</h1>
-          <p>Sharp chinos, tailored suits and skirts that move with you.</p>
-          <a class="btn" href="shop.html?c=clothing">Shop Trousers</a>
-        </div>
-        <div class="pic"><img src="images/hero-trouser.jpg" alt="Trousers" onerror="this.remove()"></div>
+        <small>TheFortunateStore</small>
+        <h1>Trousers Cut<br>to Impress.</h1>
+        <p>Sharp chinos, tailored suits and skirts that move with you.</p>
+        <a class="btn" href="shop.html?c=clothing">Shop Trousers</a>
       </div>
     </div>
 
     <div class="slide">
+      <img class="bg" src="images/hero-bags.jpg" alt="Bags" onerror="this.remove()">
+      <div class="shade"></div>
       <div class="wrap">
-        <div class="txt">
-          <small>TheFortunateStore</small>
-          <h1>Carry It<br>in Luxury.</h1>
-          <p>Totes, crossbody bags and briefcases in fine leather.</p>
-          <a class="btn" href="shop.html?c=bags">Shop Bags</a>
-        </div>
-        <div class="pic"><img src="images/hero-bags.jpg" alt="Bags" onerror="this.remove()"></div>
+        <small>TheFortunateStore</small>
+        <h1>Carry It<br>in Luxury.</h1>
+        <p>Totes, crossbody bags and briefcases in fine leather.</p>
+        <a class="btn" href="shop.html?c=bags">Shop Bags</a>
       </div>
     </div>
   </div>
@@ -112,6 +100,13 @@
 <script src="js/app.js"></script>
 <script>
 layout("home");
+
+/* ---------- Navigation sits on top of the hero photo; it turns solid black after scrolling ---------- */
+document.body.classList.add("home");
+const siteHeader = $("header.site");
+const solidNav = () => siteHeader.classList.toggle("solid", scrollY > 40);
+addEventListener("scroll", solidNav, { passive: true });
+solidNav();
 
 /* ---------- Hero carousel (the slides are written in the HTML above) ---------- */
 $("#dots").innerHTML = $$(".slide").map((s, i) => `<button class="${i === 0 ? "on" : ""}" aria-label="Go to slide ${i + 1}"></button>`).join("");

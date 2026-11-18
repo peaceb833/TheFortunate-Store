@@ -104,13 +104,20 @@ const users = () => LS.get("users", {});
 const currentUser = () => { const e = LS.get("session", null); return e ? users()[e] || null : null; };
 function saveUser(u) { const all = users(); all[u.email] = u; LS.set("users", all); }
 
+/* ---------- logo ----------
+   Save your logo as images/logo.png (a transparent PNG about 400 x 120 pixels works best).
+   If you use a different file name or type, change LOGO_FILE below.
+   Until the file is there, a dashed "Your logo here" box shows in its place. */
+const LOGO_FILE = "images/logo.png";
+const logoHtml = cls => `<a class="logo ${cls}" href="index.html" aria-label="${esc(S.name)} home"><img src="${LOGO_FILE}" alt="${esc(S.name)}" onerror="this.parentNode.classList.add('nologo');this.remove()"></a>`;
+
 /* ---------- layout ---------- */
 const svg = (d, s = 22) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 function layout(active) {
   const u = currentUser();
   $("#hdr").innerHTML = `
    <header class="site"><div class="wrap bar">
-    <a class="logo" href="index.html">${esc(S.name)}</a>
+    ${logoHtml("")}
     <nav class="nav" id="nav" aria-label="Main">
       <a href="index.html" class="${active === "home" ? "on" : ""}">Home</a>
       <a href="shop.html" class="${active === "shop" ? "on" : ""}">Shop</a>
@@ -121,6 +128,7 @@ function layout(active) {
     </nav>
     <div class="tools">
       <a href="shop.html#search" aria-label="Search">${svg('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>')}</a>
+      <a href="${u ? "account.html" : "sign-in.html"}" class="acct" aria-label="${u ? "My account" : "Sign in"}" title="${u ? "Hi, " + esc(u.name.split(" ")[0]) : "Sign in"}">${svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>')}</a>
       <a href="account.html?tab=saved" aria-label="Wishlist">${svg('<path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/>')}<span class="count" data-wish-count>0</span></a>
       <a href="cart.html" aria-label="Shopping bag">${svg('<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>')}<span class="count" data-cart-count>0</span></a>
       <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false">${svg('<path d="M3 6h18M3 12h18M3 18h18"/>', 24)}</button>
@@ -129,7 +137,7 @@ function layout(active) {
   $("#ftr").innerHTML = `
   <footer class="site"><div class="wrap">
     <div class="foot">
-      <div><h3 style="font-family:var(--serif);font-size:1.5rem;font-weight:500">${esc(S.name)}</h3><p>${esc(S.tagline)}. Pay online, we deliver to your door.</p></div>
+      <div>${logoHtml("")}<p>${esc(S.tagline)}. Pay online, we deliver to your door.</p></div>
       <div><h3>Shop</h3><a href="shop.html?g=men">Men</a><a href="shop.html?g=women">Women</a><a href="shop.html?c=shoes">Shoes</a><a href="shop.html?c=bags">Bags</a></div>
       <div><h3>Help</h3><a href="account.html">My account</a><a href="cart.html">Shopping bag</a><a href="contact.html">Contact us</a><a href="https://wa.me/${S.whatsapp}" target="_blank" rel="noopener">Chat on WhatsApp</a></div>
     </div>

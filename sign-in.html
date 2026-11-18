@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign in | TheFortunateStore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="hdr"></div>
+
+<main class="auth">
+  <!-- Left side. Put a photo at images/auth-banner.jpg (portrait or square, about 1000 x 1200) and it fills this panel. -->
+  <aside class="auth-art">
+    <img src="images/auth-banner.jpg" alt="" onerror="this.remove()">
+    <div class="auth-copy">
+      <small>TheFortunateStore</small>
+      <h2>Welcome back.</h2>
+      <p>Sign in to see your orders, your saved items and your delivery details.</p>
+      <ul>
+        <li>Your delivery address is already saved</li>
+        <li>Check out faster every time</li>
+        <li>Keep your favourite pieces in one place</li>
+      </ul>
+    </div>
+  </aside>
+
+  <section class="auth-form">
+    <div class="auth-card">
+      <div class="auth-tabs" role="tablist">
+        <a class="on" href="sign-in.html" aria-current="page">Sign in</a>
+        <a href="sign-up.html">Create account</a>
+      </div>
+
+      <h1>Sign in</h1>
+      <p class="muted auth-sub">Enter your email and password to continue.</p>
+
+      <div id="note" role="status"></div>
+
+      <form id="form" novalidate>
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+        </div>
+        <div class="field">
+          <label for="pw">Password</label>
+          <div class="pw">
+            <input id="pw" type="password" autocomplete="current-password" placeholder="Your password" required>
+            <button type="button" class="eye" id="eye" aria-label="Show password">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <button class="btn block auth-btn" type="submit" id="go">Sign in</button>
+      </form>
+
+      <p class="auth-alt">New to TheFortunateStore? <a href="sign-up.html">Create an account</a></p>
+      <p class="auth-help">Forgot your password? <a id="help" href="contact.html">Contact us</a> and we will help you.</p>
+    </div>
+  </section>
+</main>
+
+<div id="ftr"></div>
+<script src="js/config.js"></script>
+<script src="js/products.js"></script>
+<script src="js/app.js"></script>
+<script>
+layout("account");
+if (currentUser()) location.replace("account.html");
+
+const q = new URLSearchParams(location.search);
+const note = $("#note");
+const show = (type, text) => { note.innerHTML = `<div class="msg ${type}">${esc(text)}</div>`; };
+
+// after sign up the customer lands here with a welcome message and the email filled in
+if (q.get("registered")) show("ok", "Your account has been created. Please sign in to continue.");
+if (q.get("email")) $("#email").value = q.get("email");
+if (q.get("next")) $$('a[href="sign-up.html"]').forEach(a => a.href = "sign-up.html?next=" + encodeURIComponent(q.get("next")));
+if (S.whatsapp) $("#help").href = "https://wa.me/" + S.whatsapp;
+
+$("#eye").onclick = () => {
+  const p = $("#pw"), hide = p.type === "password";
+  p.type = hide ? "text" : "password";
+  $("#eye").setAttribute("aria-label", hide ? "Hide password" : "Show password");
+};
+
+$("#form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = $("#email").value.trim().toLowerCase(), pw = $("#pw").value;
+  if (!email || !pw) return show("err", "Please enter your email and password.");
+  const btn = $("#go"); btn.disabled = true; btn.textContent = "Signing in...";
+  const u = users()[email];
+  const ok = u && u.hash === await sha(pw);
+  if (!ok) { btn.disabled = false; btn.textContent = "Sign in"; return show("err", "That email and password do not match. Please try again."); }
+  LS.set("session", email);
+  // go back to the page the customer came from (only pages on this site), otherwise to their account
+  const next = q.get("next");
+  location.href = next && /^[a-z0-9-]+\.html(\?[^\s]*)?$/i.test(next) ? next : "account.html";
+});
+</script>
+</body>
+</html>
