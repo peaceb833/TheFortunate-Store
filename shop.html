@@ -7,11 +7,28 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<style>
+/* Shop banner photo: one photo per category, changes when a category is clicked */
+section.banner{position:relative;overflow:hidden;min-height:260px;display:grid;align-items:center;text-align:center;background:linear-gradient(120deg,#0B0B0B,#3A2C1B);color:#fff}
+section.banner>.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+section.banner>.shade{position:absolute;inset:0;z-index:2;background:linear-gradient(rgba(11,11,11,.55),rgba(11,11,11,.55))}
+section.banner>.wrap{position:relative;z-index:3;padding-top:54px;padding-bottom:54px}
+/* Category tiles in the middle of the page */
+.wrap.shop{display:block}
+.wrap.shop>nav{display:block;width:100%}
+#side.cattiles{display:flex;flex-wrap:nowrap;justify-content:safe center;gap:14px;overflow-x:auto;margin:0 auto 26px;padding:8px 0}
+#side.cattiles{align-items:center}
+#side.cattiles>.ct{flex:0 0 auto;position:relative;overflow:hidden;border-radius:14px;width:150px;height:210px}
+#side.cattiles>.ct:nth-of-type(odd){width:130px;height:170px}
+#side.cattiles>.ct img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#side.cattiles>.ct .ct-l{position:absolute;left:10px;right:10px;bottom:10px;z-index:1}
+.wrap.shop>main{width:100%}
+</style>
 </head>
 <body>
 <div id="hdr"></div>
 <section class="banner">
-  <img  class="bg" id="bnImg" alt="" onerror="bannerFallback(this)">
+  <img class="bg" id="bnImg" alt="" onerror="bannerFallback(this)">
   <div class="shade"></div>
   <div class="wrap">
     <small>TheFortunateStore</small>
@@ -19,7 +36,7 @@
     <p id="bnSub">Style. Quality. Class.</p>
   </div>
 </section>
-<div class="wrap shop top">
+<div class="wrap shop">
   <nav aria-label="Categories"><div class="cattiles" id="side"></div></nav>
   <main>
     <div class="toolbar">
@@ -46,29 +63,28 @@ const SIDE = [["g", "men", "Men's Fashion", "cat-men"], ["g", "women", "Women's 
 $("#q").value = st.q;
 
 /* Hero photo, headline and line for each category. Photos are the same ones your home page uses. */
-const HERO = {
-  "":          ["hero-shoes", "cat-shoes", "Shop Our<br>Collections", "Style. Quality. Class."],
-  men:         ["hero-shirts", "cat-men", "Men's<br>Fashion", "Shirts, suits, shoes and accessories for him."],
-  women:       ["hero-trouser", "cat-women", "Women's<br>Fashion", "Dresses, heels, bags and blazers for her."],
-  clothing:    ["hero-shirts", "cat-men", "Shirts That<br>Fit Right.", "Linen, cotton and print shirts, suits and skirts for every day."],
-  shoes:       ["hero-shoes", "cat-shoes", "Step Out<br>in Style.", "Leather oxfords, loafers, sneakers and heels for every occasion."],
-  bags:        ["hero-bags", "cat-bags", "Carry It<br>in Luxury.", "Totes, crossbody bags and briefcases in fine leather."],
-  accessories: ["hero-ties", "cat-belts", "Finish<br>the Look.", "Silk ties, bow ties, belts and hats that make an outfit complete."],
-  belts:       ["hero-ties", "cat-belts", "Finish<br>the Look.", "Belts that pull an outfit together."],
-  ties:        ["hero-ties", "cat-belts", "Finish<br>the Look.", "Silk ties and bow ties for every occasion."],
-  hats:        ["hero-ties", "cat-hats", "Top It<br>Off.", "Fedoras, sun hats and caps with real presence."]
+const HERO = {            // [banner photo = same photo as the category tile, backup photo, headline, line under it]
+  "":          ["cat-shoes", "shop-banner", "Shop Our<br>Collections", "Style. Quality. Class."],
+  men:         ["cat-men", "shop-banner", "Men's<br>Fashion", "Shirts, suits, shoes and accessories for him."],
+  women:       ["cat-women", "shop-banner", "Women's<br>Fashion", "Dresses, heels, bags and blazers for her."],
+  clothing:    ["cat-men", "shop-banner", "Clothing", "Shirts, suits and skirts for every day."],
+  shoes:       ["cat-shoes", "shop-banner", "Shoes", "Oxfords, loafers, sneakers and heels for every occasion."],
+  bags:        ["cat-bags", "shop-banner", "Office Bags", "Totes, crossbody bags and briefcases in fine leather."],
+  accessories: ["cat-belts", "shop-banner", "Belts<br>& Ties", "Silk ties, bow ties and belts that complete an outfit."],
+  hats:        ["cat-hats", "shop-banner", "Hats", "Fedoras, sun hats and caps with real presence."]
 };
-function bannerFallback(img) {            // if the hero photo is missing, try the category photo, then give up
-  const alt = img.dataset.alt;
-  if (alt && !img.dataset.tried) { img.dataset.tried = 1; img.src = "images/" + alt + ".jpg"; } else img.style.display = "none";
+/* Banner photo = the same photo as the category tile clicked. If it is missing, shop-banner.jpg is used. */
+function bannerFallback(img) {
+  const next = (img.dataset.list || "").split(",").filter(Boolean);
+  if (next.length) { const n = next.shift(); img.dataset.list = next.join(","); img.src = "images/" + n + ".jpg"; } else img.style.display = "none";
 }
 let lastHero = null;
 function setBanner() {
   const key = st.c || st.g || "";
   if (key === lastHero) return; lastHero = key;
   const [img, alt, title, sub] = HERO[key] || HERO[""];
-  const i = $("#bnImg"); i.style.display = ""; i.dataset.tried = ""; i.dataset.alt = alt; i.src = "images/" + img + ".jpg";
-  setBanner();
+  const i = $("#bnImg"); i.style.display = ""; i.dataset.list = alt; i.src = "images/" + img + ".jpg";
+  $("#title").innerHTML = title; $("#bnSub").textContent = sub;
   $$(".banner small,.banner h1,.banner p").forEach(e => { e.style.animation = "none"; e.offsetWidth; e.style.animation = ""; });
 }
 
@@ -82,7 +98,7 @@ function render() {
   if (st.sort === "lo") list.sort((a, b) => a.price - b.price);
   if (st.sort === "hi") list.sort((a, b) => b.price - a.price);
   if (st.sort === "az") list.sort((a, b) => a.name.localeCompare(b.name));
-  $("#title").innerHTML = st.g === "men" ? "Men's<br>Fashion" : st.g === "women" ? "Women's<br>Fashion" : st.c === "accessories" ? "Belts, Ties<br>and Hats" : st.c ? CAT_LABEL[st.c] : "Shop Our<br>Collections";
+  setBanner();
   $("#count").textContent = list.length + (list.length === 1 ? " result" : " results");
   $("#grid").innerHTML = list.length ? list.map(tile).join("")
     : `<div class="empty" style="grid-column:1/-1"><h3>Nothing matches that search</h3><p style="margin:8px auto 18px">Try a different word, or clear the filters.</p><button class="btn ghost" id="clear">Clear filters</button></div>`;

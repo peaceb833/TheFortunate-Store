@@ -7,8 +7,59 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<style>
+/* Find-an-outfit section: text and button on one side, moving pictures on the other */
+.finder-in{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)}
+.fx-car{position:relative;aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#1C1814,#0B0B0B);box-shadow:0 24px 50px rgba(0,0,0,.4);border:1px solid rgba(199,154,91,.35)}
+.fx-slide{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .9s ease,visibility .9s}
+.fx-slide.on{opacity:1;visibility:visible}
+.fx-slot{position:absolute;inset:14px;display:grid;place-items:center;text-align:center;border:1.5px dashed rgba(199,154,91,.5);border-radius:12px;font-size:.82rem;color:#BFB5A5}
+.fx-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;transform:scale(1.08);transition:transform 4.5s ease-out}
+.fx-slide.on img{transform:scale(1)}
+.fx-slide::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(transparent 55%,rgba(0,0,0,.65))}
+.fx-cap{position:absolute;z-index:3;left:18px;bottom:18px;background:var(--gold);color:var(--ink);font-weight:700;font-size:.8rem;padding:5px 14px;border-radius:999px}
+.fx-slide.on .fx-cap{animation:rise .7s .15s both}
+.fx-dots{position:absolute;z-index:4;right:16px;bottom:22px;display:flex;gap:8px}
+.fx-dots button{width:26px;height:4px;border:0;border-radius:2px;background:rgba(255,255,255,.4);padding:0;cursor:pointer}
+.fx-dots button.on{background:var(--gold)}
+@media (max-width:900px){.finder-in{grid-template-columns:minmax(0,1fr)}.fx-car{aspect-ratio:4/3}}
+@media (prefers-reduced-motion:reduce){.fx-slide,.fx-slide img{transition:none}}
+</style>
 </head>
 <body>
+<!-- Welcome splash: phones only, once per visit. Tap it to skip. -->
+<div id="splash" aria-hidden="true">
+  <div class="sp-glow"></div>
+  <div class="sp-in">
+    <div class="sp-mark">
+      <svg class="sp-ring" viewBox="0 0 120 120"><circle cx="60" cy="60" r="54"/></svg>
+      <img class="sp-logo" src="images/logo.png" alt="" onerror="this.replaceWith(Object.assign(document.createElement('b'),{className:'sp-mono',textContent:'F'}))">
+    </div>
+    <small class="sp-hi">Welcome to</small>
+    <h1 class="sp-name" id="spName">TheFortunateStore</h1>
+    <p class="sp-tag">Premium fashion for every style</p>
+    <div class="sp-bar"><i></i></div>
+  </div>
+</div>
+<script>
+(function () {
+  var s = document.getElementById("splash"), seen = false;
+  try { seen = sessionStorage.getItem("splash"); } catch (e) {}
+  if (seen || innerWidth > 768 || matchMedia("(prefers-reduced-motion: reduce)").matches) { s.remove(); return; }
+  document.documentElement.style.overflow = "hidden";
+  var n = document.getElementById("spName");
+  n.innerHTML = n.textContent.split("").map(function (c, i) { return '<span style="--i:' + i + '">' + c + "</span>"; }).join("");
+  var gone = false;
+  function done() {
+    if (gone) return; gone = true;
+    s.classList.add("out"); document.documentElement.style.overflow = "";
+    try { sessionStorage.setItem("splash", "1"); } catch (e) {}
+    setTimeout(function () { s.remove(); }, 1000);
+  }
+  setTimeout(done, 3400); s.addEventListener("click", done);
+})();
+</script>
+
 <div id="hdr"></div>
 
 <section class="hero-car" aria-roledescription="carousel" aria-label="Featured collections">
@@ -94,10 +145,85 @@
   <div class="grid" id="featured"></div>
 </div></section>
 
+<!-- Brand ribbon -->
+<div class="ribbon" aria-hidden="true"><div class="rb-track" id="ribbon"></div></div>
+
+<!-- Latest fashion trends: video carousel -->
+<section class="trend" id="trend" aria-roledescription="carousel" aria-label="Latest fashion trends">
+  <div class="wrap trend-head">
+    <div><small class="eyebrow">Latest fashion trends</small><h2>Seen on the Scene</h2></div>
+  </div>
+  <div class="tv-stage"><div class="tv-track" id="tvTrack"></div></div>
+  <div class="tv-ctrl">
+    <button class="tv-arrow" id="tvPrev" aria-label="Previous video">&#8249;</button>
+    <div class="tv-dots" id="tvDots"></div>
+    <button class="tv-arrow" id="tvNext" aria-label="Next video">&#8250;</button>
+  </div>
+</section>
+
+<!-- Combo deals -->
+<section class="sec combos"><div class="wrap">
+  <div class="sec-head"><div><small class="eyebrow">Combo deals</small><h2>Complete Looks, Better Prices</h2></div><a class="link" href="shop.html">Shop everything</a></div>
+  <div class="combo-grid" id="combos"></div>
+</div></section>
+
+<!-- Flash deals -->
+<section class="flash"><div class="wrap">
+  <div class="flash-head">
+    <div><small class="eyebrow">Flash deals</small><h2>Grab Them Fast</h2></div>
+    <div class="cd" id="cd" role="timer" aria-label="Time left on today's flash deals">
+      <div><b data-u="h">00</b><span>Hrs</span></div><i>:</i><div><b data-u="m">00</b><span>Min</span></div><i>:</i><div><b data-u="s">00</b><span>Sec</span></div>
+    </div>
+  </div>
+  <div class="rail" id="rail"></div>
+  <div class="fl-ctrl"><button class="tv-arrow dark" id="fPrev" aria-label="Scroll back">&#8249;</button><span class="muted">Drag or swipe to browse</span><button class="tv-arrow dark" id="fNext" aria-label="Scroll forward">&#8250;</button></div>
+</div></section>
+
+<!-- Find an outfit: shoppers drop a photo, we find it -->
+<section class="finder">
+  <div class="wrap finder-in">
+    <div class="finder-copy">
+      <small class="eyebrow">Can't find it? We will.</small>
+      <ul class="finder-steps"><li><b>1</b>Upload a photo</li><li><b>2</b>We hunt for it</li><li><b>3</b>We tell you when it is in stock</li></ul>
+      <a class="btn" href="find-outfit.html">Start a request</a>
+    </div>
+    <!-- Moving pictures. Save your photos as images/finder-shoes.jpg, finder-belt.jpg, finder-accessories.jpg, finder-shirt.jpg, finder-trousers.jpg -->
+    <div class="fx-car" id="fxCar" aria-roledescription="carousel" aria-label="Things we can find for you">
+      <div class="fx-slide on" role="group" aria-label="Shoes">
+        <span class="fx-slot">Your photo goes here<br>images/finder-shoes.jpg</span>
+        <img src="images/finder-shoes.jpg" alt="Shoes" loading="lazy" onerror="this.remove()">
+        <span class="fx-cap">Shoes</span>
+      </div>
+      <div class="fx-slide" role="group" aria-label="Belts">
+        <span class="fx-slot">Your photo goes here<br>images/finder-belt.jpg</span>
+        <img src="images/finder-belt.jpg" alt="Belts" loading="lazy" onerror="this.remove()">
+        <span class="fx-cap">Belts</span>
+      </div>
+      <div class="fx-slide" role="group" aria-label="Accessories">
+        <span class="fx-slot">Your photo goes here<br>images/finder-accessories.jpg</span>
+        <img src="images/finder-accessories.jpg" alt="Accessories" loading="lazy" onerror="this.remove()">
+        <span class="fx-cap">Accessories</span>
+      </div>
+      <div class="fx-slide" role="group" aria-label="Shirts">
+        <span class="fx-slot">Your photo goes here<br>images/finder-shirt.jpg</span>
+        <img src="images/finder-shirt.jpg" alt="Shirts" loading="lazy" onerror="this.remove()">
+        <span class="fx-cap">Shirts</span>
+      </div>
+      <div class="fx-slide" role="group" aria-label="Trousers">
+        <span class="fx-slot">Your photo goes here<br>images/finder-trousers.jpg</span>
+        <img src="images/finder-trousers.jpg" alt="Trousers" loading="lazy" onerror="this.remove()">
+        <span class="fx-cap">Trousers</span>
+      </div>
+      <div class="fx-dots" id="fxDots"></div>
+    </div>
+  </div>
+</section>
+
 <div id="ftr"></div>
 <script src="js/config.js"></script>
 <script src="js/products.js"></script>
 <script src="js/app.js"></script>
+<script src="js/deals.js"></script>
 <script>
 layout("home");
 
@@ -152,6 +278,122 @@ $("#cats").innerHTML = C.map(([n, href, img]) =>
 
 /* ---------- Popular products ---------- */
 $("#featured").innerHTML = PRODUCTS.filter(p => p.featured).slice(0, 8).map(tile).join("");
+
+/* ---------- Brand ribbon ---------- */
+// {
+//   const words = ["Premium fashion", "Fast delivery across Nigeria", "Secure payments", "Look good. Feel greater.", "New styles every week"];
+//   const row = words.map(w => `<span>${esc(w)}</span>`).join("");
+//   $("#ribbon").innerHTML = row + row + row + row;
+// }
+
+/* ---------- Fashion trends: video carousel ----------
+   Put your videos in a "videos" folder. Each is a short MP4 (10 to 20 seconds, under 8 MB). Edit the list to change them. */
+const TRENDS = [
+  { video: "videos/trend-runway.mp4",  poster: "images/trend-runway.jpg",  tag: "Runway",  title: "The Walk-By",        text: "Tailored lines in motion. See how a sharp fit moves.",   href: "shop.html?g=men" },
+  { video: "videos/trend-styling.mp4", poster: "images/trend-styling.jpg", tag: "Styling", title: "One Piece, Three Ways", text: "Watch a single blazer go from desk to dinner.",        href: "shop.html?g=women" },
+  { video: "videos/trend-street.mp4",  poster: "images/trend-street.jpg",  tag: "Street",  title: "Street Ready",       text: "Sneakers, caps and layers that own the pavement.",       href: "shop.html?c=shoes" }
+];
+$("#tvTrack").innerHTML = TRENDS.map((t, i) => `<article class="tv-slide ${i === 0 ? "on" : ""}" aria-label="${esc(t.title)}">
+  <span class="vslot">Add your video<br>${esc(t.video)}</span>
+  <video muted loop playsinline preload="metadata" poster="${esc(t.poster)}"><source src="${esc(t.video)}" type="video/mp4" onerror="this.parentNode.style.display='none'"></video>
+  <div class="tv-cap"><span class="tv-tag">${esc(t.tag)}</span><h3>${esc(t.title)}</h3><p>${esc(t.text)}</p><a class="btn sm" href="${t.href}">Shop the look</a></div>
+</article>`).join("");
+$("#tvDots").innerHTML = TRENDS.map((t, i) => `<button class="${i === 0 ? "on" : ""}" aria-label="Show video ${i + 1}"><i></i></button>`).join("");
+{
+  const slides = $$(".tv-slide"), dots = $$("#tvDots button"), stage = $(".tv-stage"), track = $("#tvTrack");
+  let i = 0, timer = null, seen = false;
+  const place = () => {
+    const w = slides[0].offsetWidth, gap = parseFloat(getComputedStyle(track).columnGap) || 18;
+    track.style.transform = `translateX(${(stage.clientWidth - w) / 2 - i * (w + gap)}px)`;
+  };
+  const sync = () => slides.forEach((s, k) => {
+    const v = $("video", s); if (!v) return;
+    if (k === i && seen) { const p = v.play(); if (p && p.catch) p.catch(() => {}); } else v.pause();
+  });
+  const go = n => {
+    i = (n + slides.length) % slides.length;
+    slides.forEach((s, k) => s.classList.toggle("on", k === i));
+    dots.forEach((d, k) => d.classList.toggle("on", k === i));
+    place(); sync(); auto();
+  };
+  const auto = () => { clearInterval(timer); if (seen && !REDUCED) timer = setInterval(() => go(i + 1), 7000); };
+  $("#tvNext").onclick = () => go(i + 1); $("#tvPrev").onclick = () => go(i - 1);
+  dots.forEach((d, k) => d.onclick = () => go(k));
+  slides.forEach((s, k) => s.addEventListener("click", e => { if (k !== i && !e.target.closest("a")) go(k); }));
+  let x0 = null;
+  stage.addEventListener("touchstart", e => x0 = e.touches[0].clientX, { passive: true });
+  stage.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 45) go(i + (dx < 0 ? 1 : -1)); x0 = null; });
+  addEventListener("resize", place);
+  new IntersectionObserver(es => { seen = es[0].isIntersecting; sync(); auto(); }, { threshold: .35 }).observe($("#trend"));
+  place(); addEventListener("load", place);
+}
+
+/* ---------- Combo deals ---------- */
+$("#combos").innerHTML = COMBOS.map(c => {
+  const ps = c.ids.map(byId).filter(Boolean); if (ps.length < 2) return "";
+  const full = ps.reduce((n, p) => n + p.price, 0), now = ps.reduce((n, p) => n + dealPrice(p, c.off), 0);
+  return `<article class="combo">
+    <div class="combo-art n${Math.min(ps.length, 4)}">${ps.slice(0, 4).map(p => `<div class="cth">${art(p)}</div>`).join("")}<span class="combo-badge">Save ${Math.round(c.off * 100)}%</span></div>
+    <div class="combo-body"><small class="eyebrow">${esc(c.tag)}</small><h3>${esc(c.name)}</h3>
+      <ul>${ps.map(p => `<li>${esc(p.name)}</li>`).join("")}</ul>
+      <div class="combo-price"><b>${money(now)}</b><s>${money(full)}</s></div>
+      <span class="muted small">You save ${money(full - now)}</span>
+      <button class="btn dark" data-combo="${c.id}">Choose sizes and add</button></div>
+  </article>`;
+}).join("");
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-combo]"); if (!b) return;
+  const c = COMBOS.find(x => x.id === b.dataset.combo); if (c) dealPicker({ title: c.name, ids: c.ids, off: c.off });
+});
+
+/* ---------- Find an outfit: moving pictures ---------- */
+{
+  const car = $("#fxCar"), sl = $$(".fx-slide", car), dots = $("#fxDots");
+  dots.innerHTML = sl.map((s, i) => `<button class="${i ? "" : "on"}" aria-label="Show ${i + 1}"></button>`).join("");
+  const bt = $$("button", dots); let i = 0, t = null, vis = false;
+  const show = n => { i = (n + sl.length) % sl.length; sl.forEach((s, k) => s.classList.toggle("on", k === i)); bt.forEach((d, k) => d.classList.toggle("on", k === i)); };
+  const run = () => { clearInterval(t); if (vis && !matchMedia("(prefers-reduced-motion: reduce)").matches) t = setInterval(() => show(i + 1), 3500); };
+  bt.forEach((d, k) => d.onclick = () => { show(k); run(); });
+  let x0 = null;
+  car.addEventListener("touchstart", e => x0 = e.touches[0].clientX, { passive: true });
+  car.addEventListener("touchend", e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) { show(i + (dx < 0 ? 1 : -1)); run(); } x0 = null; });
+  new IntersectionObserver(es => { vis = es[0].isIntersecting; run(); }, { threshold: .3 }).observe(car);
+}
+
+/* ---------- Flash deals: countdown, drag rail, tilt cards ---------- */
+$("#rail").innerHTML = FLASH.map(f => {
+  const p = byId(f.id); if (!p) return "";
+  return `<article class="fcard" data-tilt>
+    <div class="fc-art"><span class="fc-badge">-${Math.round(f.off * 100)}%</span>${heart(p.id)}
+      <a href="product.html?id=${p.id}" draggable="false">${art(p)}</a><i class="fc-glare"></i></div>
+    <div class="fc-body"><h3>${esc(p.name)}</h3>
+      <div class="fc-price"><b>${money(dealPrice(p, f.off))}</b><s>${money(p.price)}</s></div>
+      <button class="btn sm" data-flash="${p.id}" data-off="${f.off}">Grab this deal</button></div>
+  </article>`;
+}).join("");
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-flash]"); if (b) claimDeal(b.dataset.flash, +b.dataset.off);
+});
+{
+  const end = new Date(); end.setHours(24, 0, 0, 0);
+  const tick = () => {
+    if (end - Date.now() <= 0) end.setDate(end.getDate() + 1);
+    const ms = end - Date.now(), v = { h: Math.floor(ms / 3.6e6), m: Math.floor(ms / 6e4) % 60, s: Math.floor(ms / 1e3) % 60 };
+    for (const k in v) {
+      const el = $(`#cd [data-u="${k}"]`), t = String(v[k]).padStart(2, "0");
+      if (el.textContent !== t) { el.textContent = t; el.classList.remove("flip"); void el.offsetWidth; el.classList.add("flip"); }
+    }
+  };
+  tick(); setInterval(tick, 1000);
+
+  const r = $("#rail"); let down = false, sx = 0, sl = 0, moved = false;
+  r.addEventListener("pointerdown", e => { if (e.pointerType !== "mouse") return; down = true; moved = false; sx = e.clientX; sl = r.scrollLeft; });
+  addEventListener("pointermove", e => { if (!down) return; const dx = e.clientX - sx; if (Math.abs(dx) > 5) { moved = true; r.classList.add("drag"); } r.scrollLeft = sl - dx; });
+  addEventListener("pointerup", () => { down = false; r.classList.remove("drag"); });
+  r.addEventListener("click", e => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+  $("#fPrev").onclick = () => r.scrollBy({ left: -r.clientWidth * .8, behavior: "smooth" });
+  $("#fNext").onclick = () => r.scrollBy({ left: r.clientWidth * .8, behavior: "smooth" });
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Find an Outfit | TheFortunateStore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+/* Styles for this page only, so it works with any version of style.css */
+[hidden]{display:none!important}
+.fo-wrap{display:grid;grid-template-columns:1.25fr 1fr;gap:28px;padding:34px 0 60px;align-items:start}
+.fo-find-wrap{display:grid;grid-template-columns:1.25fr 1fr;gap:28px;padding:34px 0 60px;align-items:start}
+.fo-drop{position:relative;display:grid;place-items:center;text-align:center;gap:6px;padding:30px 16px;border:2px dashed #C79A5B;border-radius:6px;background:#fff;cursor:pointer;margin-bottom:16px;transition:background .15s}
+.fo-drop:hover,.fo-drop.fo-over{background:#EFE0C8}
+.fo-drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.fo-drop:focus-within{outline:3px solid #C79A5B;outline-offset:2px}
+.fo-drop b{font-size:1.05rem}
+.fo-drop small{color:#6B645A}
+.fo-preview{position:relative;margin-bottom:16px}
+.fo-preview img{display:block;width:100%;max-height:340px;object-fit:contain;background:#fff;border:1px solid #E3DACB;border-radius:6px}
+.fo-preview button{position:absolute;top:8px;right:8px}
+.fo-contact-pref{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 14px}
+.fo-contact-pref label{cursor:pointer}
+.fo-contact-pref input{position:absolute;opacity:0;width:1px;height:1px}
+.fo-contact-pref span{display:inline-block;padding:8px 16px;border:1.5px solid #E3DACB;border-radius:999px;background:#fff;font-size:.92rem}
+.fo-contact-pref input:checked+span{background:#0B0B0B;border-color:#0B0B0B;color:#fff}
+.fo-contact-pref input:focus-visible+span{outline:3px solid #C79A5B;outline-offset:2px}
+.fo-steps-list{display:grid;gap:14px;margin-top:6px}
+.fo-steps-list div{display:flex;gap:12px}
+.fo-steps-list b{display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:50%;background:#EFE0C8;color:#A47A3F;font-size:.9rem}
+.fo-sent{text-align:center;padding:50px 16px 70px}
+.fo-sent h1{font-size:clamp(1.9rem,4vw,2.8rem);margin-bottom:10px}
+.fo-sent p{margin:0 auto 18px}
+.fo-acts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+@media (max-width:900px){.fo-find-wrap{grid-template-columns:1fr;padding-top:22px}.fo-drop{padding:24px 12px}}
+@media (max-width:520px){.fo-acts .btn{width:100%}}
+</style>
+</head>
+<body>
+<div id="hdr"></div>
+<section class="banner"><div class="wrap"><h1>Find an Outfit</h1><p>Saw something you love? Send us the photo and we will look for it.</p></div></section>
+
+<div class="wrap" id="main">
+  <div class="fo-find-wrap">
+    <form class="box" id="f" novalidate>
+      <h2>Your request</h2>
+      <div id="test" class="msg ok" hidden>Test mode: requests are not being sent to the owner yet. Add your form link in js/config.js.</div>
+      <div id="err" class="msg err" role="alert" hidden></div>
+
+      <label class="fo-drop" id="drop" for="photo">
+        <input id="photo" type="file" accept="image/*">
+        <b>Tap to add a photo</b>
+        <small>Choose from your gallery or take a photo. You can also drag a picture here.</small>
+      </label>
+      <div class="fo-preview" id="preview" hidden>
+        <img id="pimg" alt="Your photo">
+        <button type="button" class="btn dark sm" id="swap">Change photo</button>
+      </div>
+
+      <div class="two">
+        <div class="field"><label for="what">What is it?</label>
+          <select id="what"><option value="">Choose one</option><option>Dress</option><option>Top or shirt</option><option>Trousers</option><option>Suit or blazer</option><option>Shoes</option><option>Bag</option><option>Belt</option><option>Tie</option><option>Hat</option><option>Other</option></select></div>
+        <div class="field"><label for="size">Your size (optional)</label><input id="size" placeholder="For example M, or 42"></div>
+      </div>
+      <div class="field"><label for="desc">Describe it (optional)</label><textarea id="desc" rows="3" placeholder="Colour, material, anything we should know"></textarea></div>
+      <div class="two">
+        <div class="field"><label for="budget">Your budget (optional)</label><input id="budget" inputmode="numeric" placeholder="For example 40000"></div>
+        <div class="field"><label for="seen">Where did you see it? (optional)</label><input id="seen" placeholder="Instagram, a friend, a shop"></div>
+      </div>
+      <div class="field"><label for="link">Link to the item (optional)</label><input id="link" type="url" placeholder="https://"></div>
+
+      <h2 style="margin-top:10px">How can we reach you?</h2>
+      <div class="two">
+        <div class="field"><label for="name">Your name</label><input id="name" autocomplete="name"></div>
+        <div class="field"><label for="phone">Phone number (WhatsApp if possible)</label><input id="phone" type="tel" autocomplete="tel"></div>
+      </div>
+      <div class="field"><label for="email">Email (optional)</label><input id="email" type="email" autocomplete="email"></div>
+      <b style="font-size:.9rem">Tell me by</b>
+      <div class="fo-contact-pref" role="radiogroup" aria-label="How should we contact you">
+        <label><input type="radio" name="prefer" value="WhatsApp" checked><span>WhatsApp</span></label>
+        <label><input type="radio" name="prefer" value="phone call"><span>Phone call</span></label>
+        <label><input type="radio" name="prefer" value="email"><span>Email</span></label>
+      </div>
+      <button class="btn block" id="go" type="submit">Send my request</button>
+    </form>
+
+    <aside class="box">
+      <h2>How it works</h2>
+      <div class="fo-steps-list">
+        <div><b>1</b><span>Upload a photo of the outfit and tell us your size.</span></div>
+        <div><b>2</b><span>The request goes straight to our team.</span></div>
+        <div><b>3</b><span>We search for it. If we have it in stock, we message you with the price and how to order.</span></div>
+      </div>
+      <p class="muted" style="margin-top:18px;font-size:.9rem">Not every outfit can be found, but we will always tell you either way.</p>
+    </aside>
+  </div>
+</div>
+<div id="ftr"></div>
+<script src="js/config.js"></script>
+<script src="js/products.js"></script>
+<script src="js/app.js"></script>
+<script>
+layout("find");
+(() => {
+const notSet = v => !v || /X{4,}/.test(v);
+const live = !notSet(S.formEndpoint);
+if (!live) $("#test").hidden = false;
+let file = null, thumb = "";
+const show = (m) => { const e = $("#err"); e.textContent = m; e.hidden = false; e.scrollIntoView({ behavior: "smooth", block: "center" }); };
+
+/* prefill from the signed-in account */
+const u = currentUser();
+if (u) { $("#name").value = u.name || ""; $("#phone").value = u.phone || ""; $("#email").value = u.email || ""; }
+
+/* photo picking */
+function resize(f, max, q = .85) {
+  return new Promise(res => {
+    const img = new Image(), url = URL.createObjectURL(f);
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement("canvas");
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      c.toBlob(b => res({ blob: b, url: c.toDataURL("image/jpeg", q) }), "image/jpeg", q);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); res(null); };
+    img.src = url;
+  });
+}
+async function take(f) {
+  if (!f) return;
+  if (!/^image\//.test(f.type)) return show("That file is not a picture. Choose a photo from your gallery.");
+  const big = await resize(f, 1400), small = await resize(f, 240, .7);
+  if (!big) return show("We could not open that photo. Try a different one.");
+  file = big.blob; thumb = small.url;
+  $("#pimg").src = big.url; $("#preview").hidden = false; $("#drop").hidden = true; $("#err").hidden = true;
+}
+$("#photo").onchange = e => take(e.target.files[0]);
+$("#swap").onclick = () => { $("#photo").value = ""; $("#preview").hidden = true; $("#drop").hidden = false; file = null; thumb = ""; $("#photo").click(); };
+["dragover", "dragenter"].forEach(n => $("#drop").addEventListener(n, e => { e.preventDefault(); $("#drop").classList.add("fo-over"); }));
+["dragleave", "drop"].forEach(n => $("#drop").addEventListener(n, e => { e.preventDefault(); $("#drop").classList.remove("fo-over"); }));
+$("#drop").addEventListener("drop", e => take(e.dataTransfer.files[0]));
+
+/* a photo dropped on the home page arrives here */
+try {
+  const pending = sessionStorage.getItem("finderPhoto");
+  if (pending) { sessionStorage.removeItem("finderPhoto"); fetch(pending).then(r => r.blob()).then(b => take(new File([b], "photo.jpg", { type: b.type || "image/jpeg" }))).catch(() => {}); }
+} catch {}
+
+/* helpers */
+const intl = p => { let d = String(p).replace(/\D/g, ""); if (d.startsWith("0")) d = "234" + d.slice(1); return d; };
+const val = id => $("#" + id).value.trim();
+
+async function uploadPhoto() {
+  if (notSet(S.imageUploadKey) || !file) return "";
+  try {
+    const fd = new FormData(); fd.append("image", file, "request.jpg");
+    const r = await fetch("https://api.imgbb.com/1/upload?key=" + encodeURIComponent(S.imageUploadKey), { method: "POST", body: fd });
+    const j = await r.json(); return (j && j.data && j.data.url) || "";
+  } catch { return ""; }
+}
+
+function message(r) {
+  return `OUTFIT REQUEST ${r.ref}\n\nSomeone needs this item. Please check if we have it in stock.\n\n` +
+    `Item: ${r.what}\n` + (r.desc ? `Details: ${r.desc}\n` : "") + (r.size ? `Size: ${r.size}\n` : "") +
+    (r.budget ? `Budget: ${S.currency}${r.budget}\n` : "") + (r.seen ? `Seen at: ${r.seen}\n` : "") + (r.link ? `Item link: ${r.link}\n` : "") +
+    `Photo: ${r.photoUrl || "(not attached, the shopper will send it on WhatsApp)"}\n\n` +
+    `SHOPPER\n${r.name}\nPhone: ${r.phone}\n` + (r.email ? `Email: ${r.email}\n` : "") + `Wants to hear back by: ${r.prefer}\n` +
+    `Reply on WhatsApp: https://wa.me/${intl(r.phone)}`;
+}
+
+$("#f").onsubmit = async e => {
+  e.preventDefault(); $("#err").hidden = true;
+  const r = { ref: "REQ-" + Date.now().toString(36).toUpperCase(), date: new Date().toISOString(), what: val("what") || "Outfit", desc: val("desc"), size: val("size"), budget: val("budget"), seen: val("seen"), link: val("link"),
+    name: val("name"), phone: val("phone"), email: val("email"), prefer: (document.querySelector('input[name=prefer]:checked') || {}).value || "WhatsApp", owner: u ? u.email : "", thumb, photoUrl: "", cat: "", note: "", notify: "", status: "Searching" };
+  r.cat = r.what; r.note = r.desc; r.notify = r.prefer;
+  if (!file && !r.link) return show("Add a photo of the outfit, or paste a link to it.");
+  if (!r.name) return show("Enter your name so we know who to contact.");
+  if (!/^[0-9+\s-]{7,}$/.test(r.phone)) return show("Enter a phone number we can reach you on, for example 0803 000 0000.");
+  if (r.email && !/^\S+@\S+\.\S+$/.test(r.email)) return show("That email address does not look right. Check it or leave it empty.");
+  if (r.prefer === "email" && !r.email) return show("You chose email, so enter your email address.");
+
+  const btn = $("#go"); btn.disabled = true; btn.textContent = "Sending...";
+  r.photoUrl = await uploadPhoto();
+  const text = message(r);
+  let sent = false;
+
+  // 1. Email to the owner
+  if (live) {
+    try {
+      const res = await fetch(S.formEndpoint, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ _subject: "Outfit request " + r.ref + ": " + r.what, email: r.email || "no-email@thefortunatestore.com", name: r.name, message: text, photo: r.photoUrl }) });
+      sent = res.ok;
+    } catch { sent = false; }
+  }
+  // 2. Automatic WhatsApp text to the owner (optional service)
+  if (!notSet(S.callmebotKey)) {
+    try { await fetch("https://api.callmebot.com/whatsapp.php?phone=" + intl(S.whatsapp) + "&text=" + encodeURIComponent(text) + "&apikey=" + encodeURIComponent(S.callmebotKey), { mode: "no-cors" }); sent = true; } catch {}
+  }
+  // 3. Keep a copy in the shopper's account
+  const all = LS.get("requests", []); all.unshift(r); LS.set("requests", all.slice(0, 30));
+
+  if (live && !sent) { btn.disabled = false; btn.textContent = "Send my request"; return show("Your request did not send. Check your internet and try again, or message us on WhatsApp."); }
+  done(r, text, sent);
+};
+
+function done(r, text, sent) {
+  const wa = "https://wa.me/" + S.whatsapp + "?text=" + encodeURIComponent(text);
+  const canShare = file && navigator.canShare && navigator.canShare({ files: [new File([file], "outfit.jpg", { type: "image/jpeg" })] });
+  $("#main").innerHTML = `<div class="fo-sent">
+    <h1>Thank you, ${esc(r.name.split(" ")[0])}. We are on it.</h1>
+    <p>Your request <b>${esc(r.ref)}</b> ${sent ? "has been sent to our team" : "is saved"}. We will look for it and contact you by ${esc(r.prefer)} on ${esc(r.phone)}.</p>
+    ${sent ? "" : `<div class="msg ok" style="max-width:520px;margin:0 auto 16px">Test mode: nothing was sent to the owner. Use the WhatsApp button to send it by hand.</div>`}
+    <p class="muted" style="font-size:.92rem">To help us find it faster, send the request on WhatsApp too${r.photoUrl ? "" : " and attach your photo"}.</p>
+    <div class="fo-acts"><a class="btn" href="${wa}" target="_blank" rel="noopener">Send on WhatsApp</a>
+    ${canShare ? `<button class="btn dark" id="share" type="button">Share the photo</button>` : ""}
+    <a class="btn ghost" href="shop.html">Keep shopping</a></div></div>`;
+  const sh = $("#share");
+  if (sh) sh.onclick = () => navigator.share({ files: [new File([file], "outfit.jpg", { type: "image/jpeg" })], text: "Outfit request " + r.ref }).catch(() => {});
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+})();
+</script>
+</body>
+</html>

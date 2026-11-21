@@ -78,7 +78,7 @@ function signedIn(u) {
   const mine = LS.get("orders", []).filter(o => o.owner === u.email);
   const spent = mine.reduce((n, o) => n + o.total, 0), saved = wishes().map(byId).filter(Boolean);
   let tab = qs.get("tab") || "dash";
-  const TABS = [["dash", "Dashboard"], ["orders", "My Orders"], ["address", "My Addresses"], ["profile", "My Profile"], ["saved", "Saved Items"]];
+  const TABS = [["dash", "Dashboard"], ["orders", "My Orders"], ["address", "My Addresses"], ["profile", "My Profile"], ["requests", "Outfit Requests"], ["saved", "Saved Items"]];
   const views = {
     dash: () => `<div class="sec-head" style="margin:0"><div><h2>My Dashboard</h2><p class="muted">Track your orders and manage your account.</p></div><a class="btn" href="shop.html">Keep shopping</a></div>
       <div class="stats"><div class="stat"><b>${mine.length}</b><span>Total orders</span></div><div class="stat"><b>${mine.reduce((n, o) => n + o.items.reduce((m, i) => m + i.qty, 0), 0)}</b><span>Items bought</span></div><div class="stat"><b>${saved.length}</b><span>Saved items</span></div><div class="stat"><b>${money(spent)}</b><span>Total spent</span></div></div>
@@ -90,6 +90,9 @@ function signedIn(u) {
     profile: () => `<h2 style="margin-bottom:18px">My Profile</h2>
       <div class="box" style="max-width:520px"><div id="m1" class="msg err" style="display:none"></div><div id="m2" class="msg ok" style="display:none">Profile saved.</div>
       <form id="fp" novalidate>${profileFields(u)}<div class="field"><label>Email</label><input value="${esc(u.email)}" disabled></div><button class="btn block" type="submit">Save profile</button></form></div>`,
+    requests: () => { const r = LS.get("requests", []).filter(x => x.owner === u.email);
+      return `<div class="sec-head" style="margin:0 0 16px"><div><h2>Outfit Requests</h2><p class="muted">Photos you sent us to find. We message you when we have a match in stock.</p></div><a class="btn" href="find-outfit.html">New request</a></div>` +
+        (r.length ? r.map(reqRow).join("") : `<div class="empty"><p>No requests yet. Saw something you love? Send us a photo.</p><a class="btn" style="margin-top:14px" href="find-outfit.html">Find an outfit</a></div>`); },
     saved: () => `<h2 style="margin-bottom:18px">Saved Items</h2>${saved.length ? `<div class="grid">${saved.map(tile).join("")}</div>` : `<div class="empty"><p>Tap the heart on any product to save it here.</p><a class="btn" style="margin-top:14px" href="shop.html">Browse products</a></div>`}`
   };
   const draw = () => {
@@ -111,7 +114,7 @@ function signedIn(u) {
 
 layout("account");
 const me = currentUser();
-me ? signedIn(me) : location.replace("sign-in.html" + (next ? "?next=" + (next === "cart" ? "cart.html" : "account.html") : ""));
+me ? signedIn(me) : signedOut();
 </script>
 </body>
 </html>

@@ -44,9 +44,9 @@ function show() {
     <div class="line">
       ${art(l.p)}
       <div><a href="product.html?id=${l.p.id}"><b>${esc(l.p.name)}</b></a>
-        <div class="muted" style="font-size:.9rem">${esc(l.color)}, size ${esc(l.size)}</div>
+        <div class="muted" style="font-size:.9rem">${esc(l.color)}, size ${esc(l.size)}</div>${l.off ? `<span class="pill">${Math.round(l.off * 100)}% off deal</span>` : ""}
         <button class="rm" data-rm="${i}">Remove</button></div>
-      <div style="text-align:right"><b>${money(l.p.price * l.qty)}</b>
+      <div style="text-align:right"><b>${money(l.unit * l.qty)}</b>${l.off ? `<div class="muted" style="font-size:.8rem"><s>${money(l.p.price * l.qty)}</s></div>` : ""}
         <div class="qty" style="margin-top:8px"><button data-dec="${i}" aria-label="Fewer">−</button><span>${l.qty}</span><button data-inc="${i}" aria-label="More">+</button></div></div>
     </div>`).join("");
 
@@ -100,7 +100,7 @@ function startPayment() {
   const { lines, subtotal, delivery, total } = cartLines();
   const make = ref => ({
     ref, date: new Date().toISOString(), demo: demoMode, customer, subtotal, delivery, total,
-    items: lines.map(l => ({ id: l.p.id, name: l.p.name, color: l.color, size: l.size, qty: l.qty, price: l.p.price }))
+    items: lines.map(l => ({ id: l.p.id, name: l.p.name, color: l.color, size: l.size, qty: l.qty, price: l.unit }))
   });
 
   if (demoMode) return finish(make("TEST-" + Date.now()));
