@@ -6,7 +6,7 @@ window.STORE = {
   tagline: "Premium fashion for every style",
 
   // Where order alerts go
-  whatsapp: "2348000000000",                // your WhatsApp number: country code + number, no + or spaces
+  whatsapp: "+2349128042254",                // your WhatsApp number: country code + number, no + or spaces
   email: "hello@thefortunatestore.com",   // your email (shown on the Contact page)
   location: "Lagos, Nigeria",             // shown on the Contact page
 

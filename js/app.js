@@ -131,7 +131,8 @@ function layout(active) {
     <nav class="nav" id="nav" aria-label="Main">
       <a href="index.html" class="${active === "home" ? "on" : ""}">Home</a>
       <a href="shop.html" class="${active === "shop" ? "on" : ""}">Shop</a>
-      <a href="find-outfit.html" class="find ${active === "find" ? "on" : ""}">Find An Outfit</a>
+      <a href="find-outfit.html" class="find ${active === "find" ? "on" : ""}">Snap & Find</a>
+      <a href="Community.html" class=" ${active === "" ? "on" : ""}">Community</a>
       <a href="contact.html" class="${active === "contact" ? "on" : ""}">Contact</a>
       <!-- on phones the icons live inside the menu -->
       <div class="nav-tools">

@@ -240,7 +240,7 @@ body.home header.site.solid{background:var(--ink)}
 .slide .wrap{position:relative;z-index:3;height:100%;padding-top:66px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
 .slide small{font-family:var(--serif);color:var(--gold);font-size:1.05rem;margin-bottom:10px}
 .slide h1{margin-bottom:14px;max-width:16ch}
-.slide p{font-size:1.1rem;color:#F1E8D8;margin:0 auto 26px;max-width:46ch}
+.slide p{font-size:1.1rem;color:#EEEEEE;margin:0 auto 26px;max-width:46ch}
 .slide.on small,.slide.on h1,.slide.on p,.slide.on .btn{animation:rise .8s both}
 .slide.on h1{animation-delay:.12s}
 .slide.on p{animation-delay:.24s}
@@ -379,7 +379,7 @@ body.home header.site:has(.nav.open){background:var(--ink)}
 @media (max-width:900px){
   .tools{display:none}
   .menu-btn{display:block}
-  .logo img{height:50px}
+  .logo img{height:100px}
   .nav{display:flex;visibility:hidden;opacity:0;transform:translateY(-10px);pointer-events:none;max-height:calc(100vh - 66px);overflow-y:auto;transition:opacity .25s,transform .25s,visibility .25s}
   .nav.open{visibility:visible;opacity:1;transform:none;pointer-events:auto}
   .nav.open>*{animation:rise .4s both}
